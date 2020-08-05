@@ -2,10 +2,10 @@
 title: "Supplement"
 subtitle: "On the journal article ... "
 author:
-  - name: Jürgen Schneider 
-    url: https://uni-tuebingen.de/de/28915
-    affiliation: Universität Tübingen
-    email: juergen.schneider@uni-tuebingen.de
+  - name: Author # Jürgen Schneider 
+    url: website # https://uni-tuebingen.de/de/28915
+    affiliation: affiliation # Universität Tübingen
+    email: email # juergen.schneider@uni-tuebingen.de
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -45,13 +45,14 @@ library(psych)
 __R-Version__
 
 ```{r rversion}
-# test
 R.Version()
 ```
 
 # Import data
-
-Can't share data on github, but you can get the __open data__ via the repository https://doi.org/10.4232/1.13468  
+```{r echo=FALSE, eval=F}
+# https://doi.org/10.4232/1.13468
+```
+Can't share data on github, but you can get the __open data__ via the repository [Link to data repository shared after blind peer-review]  
 as well as documentation of scales.
 
 ```{r }
@@ -98,52 +99,101 @@ pbl_di <- pbl_di %>%
   mutate(prior_knowledge = rowMeans(data.frame(T1_wiss_crm_verh1, T1_wiss_crm_verh2, T1_wiss_crm_verh3, T1_wiss_crm_verh4, T1_wiss_crm_verh5, T1_wiss_crm_verh6, T1_wiss_crm_bez1, T1_wiss_crm_bez2, T1_wiss_crm_unt1, T1_wiss_crm_unt2, T1_wiss_crm_unt3, T1_wiss_crm_unt4, T1_wiss_crm_unt5, T1_wiss_crm_unt6), na.rm = T))
 
 
+pbl_di <- pbl_di %>%
+  mutate(sel_att_pre1 = case_when(
+                           is.na(theorie.r.43.1) & is.na(theorie.r.43.2) & is.na(theorie.r.43.7) &
+                           is.na(A43_1) & is.na(A43_2) & is.na(A43_7) ~ as.numeric(NA),
+                           TRUE ~ as.numeric(anz.komm.43.1)),
+         sel_att_pre2 = case_when(
+                           is.na(theorie.r.43.1) & is.na(theorie.r.43.2) & is.na(theorie.r.43.7) &
+                           is.na(A43_1) & is.na(A43_2) & is.na(A43_7) ~ as.numeric(NA),
+                           TRUE ~ as.numeric(anz.komm.43.2)),
+         sel_att_pre3 = case_when(
+                           is.na(theorie.r.43.1) & is.na(theorie.r.43.2) & is.na(theorie.r.43.7) &
+                           is.na(A43_1) & is.na(A43_2) & is.na(A43_7) ~ as.numeric(NA),
+                           TRUE ~ as.numeric(anz.komm.43.7)),
+         sel_att_post1 = case_when(
+                           is.na(theorie.r.43.3) & is.na(theorie.r.43.4) & is.na(theorie.r.43.5) &
+                           is.na(A43_3) & is.na(A43_4) & is.na(A43_5) ~ as.numeric(NA),
+                           TRUE ~ as.numeric(anz.komm.43.3)),
+         sel_att_post2 = case_when(
+                           is.na(theorie.r.43.3) & is.na(theorie.r.43.4) & is.na(theorie.r.43.5) &
+                           is.na(A43_3) & is.na(A43_4) & is.na(A43_5) ~ as.numeric(NA),
+                           TRUE ~ as.numeric(anz.komm.43.4)),
+         sel_att_post3 = case_when(
+                           is.na(theorie.r.43.3) & is.na(theorie.r.43.4) & is.na(theorie.r.43.5) &
+                           is.na(A43_3) & is.na(A43_4) & is.na(A43_5) ~ as.numeric(NA),
+                           TRUE ~ as.numeric(anz.komm.43.5))
+         )
+
 
 # deleting some variables to avoid problems with imputation
 pbl_di <- pbl_di %>%
-  # mutate(attendance = anwesend-anwesend_MEAN[1,1]) %>%
+  mutate(theory_pre1 = theorie.r.43.1,
+         theory_pre2 = theorie.r.43.2,
+         theory_pre3 = theorie.r.43.7,
+         theory_post1 = theorie.r.43.3,
+         theory_post2 = theorie.r.43.4,
+         theory_post3 = theorie.r.43.5,
+         inquiry_pre1 = A43_1, 
+         inquiry_pre2 = A43_2, 
+         inquiry_pre3 = A43_7, 
+         inquiry_post1 = A43_3, 
+         inquiry_post2 = A43_4, 
+         inquiry_post3 = A43_5) %>% # rename some variables for easier understanding
   dplyr::select(treatment, seminar, attendance, 
-         anz.komm.43.1, anz.komm.43.2, anz.komm.43.7, anz.komm.43.3, anz.komm.43.4, anz.komm.43.5,
-         theorie.r.43.1, theorie.r.43.2, theorie.r.43.7, theorie.r.43.3, theorie.r.43.4, theorie.r.43.5, 
-         A43_1, A43_2, A43_7, A43_3, A43_4, A43_5, literature,
+         sel_att_pre1, sel_att_pre2, sel_att_pre3, sel_att_post1, sel_att_post2, sel_att_post3,
+         theory_pre1, theory_pre2, theory_pre3, theory_post1, theory_post2, theory_post3, 
+         inquiry_pre1, inquiry_pre2, inquiry_pre3, inquiry_post1, inquiry_post2, inquiry_post3, literature,
          T2_anstrS_1, T2_anstrS_2, T2_anstrS_3, T2_anstrT_1, T2_anstrT_2, T2_anstrT_3, T2_anstrT_4,
          doz_pass, doz_gef,
          geschl, unterrichtet, erf_vid, lit_pre, prior_knowledge) %>%
   dplyr::filter(!is.na(seminar))
 
-pbl_di <- pbl_di %>%
-  mutate(anz.komm.43.1 = case_when(
-                           is.na(theorie.r.43.1) & is.na(theorie.r.43.2) & is.na(theorie.r.43.7) &
-                           is.na(A43_1) & is.na(A43_2) & is.na(A43_7) ~ as.numeric(NA),
-                           TRUE ~ as.numeric(anz.komm.43.1)),
-         anz.komm.43.2 = case_when(
-                           is.na(theorie.r.43.1) & is.na(theorie.r.43.2) & is.na(theorie.r.43.7) &
-                           is.na(A43_1) & is.na(A43_2) & is.na(A43_7) ~ as.numeric(NA),
-                           TRUE ~ as.numeric(anz.komm.43.2)),
-         anz.komm.43.7 = case_when(
-                           is.na(theorie.r.43.1) & is.na(theorie.r.43.2) & is.na(theorie.r.43.7) &
-                           is.na(A43_1) & is.na(A43_2) & is.na(A43_7) ~ as.numeric(NA),
-                           TRUE ~ as.numeric(anz.komm.43.7)),
-         anz.komm.43.3 = case_when(
-                           is.na(theorie.r.43.3) & is.na(theorie.r.43.4) & is.na(theorie.r.43.5) &
-                           is.na(A43_3) & is.na(A43_4) & is.na(A43_5) ~ as.numeric(NA),
-                           TRUE ~ as.numeric(anz.komm.43.3)),
-         anz.komm.43.4 = case_when(
-                           is.na(theorie.r.43.3) & is.na(theorie.r.43.4) & is.na(theorie.r.43.5) &
-                           is.na(A43_3) & is.na(A43_4) & is.na(A43_5) ~ as.numeric(NA),
-                           TRUE ~ as.numeric(anz.komm.43.4)),
-         anz.komm.43.5 = case_when(
-                           is.na(theorie.r.43.3) & is.na(theorie.r.43.4) & is.na(theorie.r.43.5) &
-                           is.na(A43_3) & is.na(A43_4) & is.na(A43_5) ~ as.numeric(NA),
-                           TRUE ~ as.numeric(anz.komm.43.5))
-         )
+
 
 ```
 
 
 # Names and labels of variables
 ```{r }
+names_labels <- data.frame(names = names(pbl_di[1:31]),
+                          `item labels` = c(
+                            "Treatment variable [0: DI, 1: PBL]",
+                            "ID of course group (used as cluster variable)",
+                            "How many of the treatment sessions the student attended [0,1,2]",
+                            "Measure of selective attention, first sequence of pre-test [quantity of comments]",
+                            "Measure of selective attention, second sequence of pre-test [quantity of comments]",
+                            "Measure of selective attention, third sequence of pre-test [quantity of comments]",
+                            "Measure of selective attention, first sequence of post-test [quantity of comments]",
+                            "Measure of selective attention, second sequence of post-test [quantity of comments]",
+                            "Measure of selective attention, third sequence of post-test [quantity of comments]",
+                            "Measure of theory integration, first sequence of pre-test [% of comments with theory integration: 0-100]",
+                            "Measure of theory integration, second sequence of pre-test [% of comments with theory integration: 0-100]",
+                            "Measure of theory integration, third sequence of pre-test [% of comments with theory integration: 0-100]",
+                            "Measure of theory integration, first sequence of post-test [% of comments with theory integration: 0-100]",
+                            "Measure of theory integration, second sequence of post-test [% of comments with theory integration: 0-100]",
+                            "Measure of theory integration, third sequence of post-test [% of comments with theory integration: 0-100]",
+                            "Measure of inquiry steps realized, first sequence of pre-test [0,1,2,3]",
+                            "Measure of inquiry steps realized, second sequence of pre-test [0,1,2,3]",
+                            "Measure of inquiry steps realized, third sequence of pre-test [0,1,2,3]",
+                            "Measure of inquiry steps realized, first sequence of post-test [0,1,2,3]",
+                            "Measure of inquiry steps realized, second sequence of post-test [0,1,2,3]",
+                            "Measure of inquiry steps realized, third sequence of post-test [0,1,2,3]",
+                            "number of theoretical literature on classroom management read [0,1,2,3]",
+                            "Willingness for effort, Likert item 1 [1,2,3,4]",
+                            "Willingness for effort, Likert item 2 [1,2,3,4]",
+                            "Willingness for effort, Likert item 3 [1,2,3,4]",
+                            "Willingness for effort, Likert item 4 [1,2,3,4]",
+                            "Willingness for effort, Likert item 5 [1,2,3,4]",
+                            "Willingness for effort, Likert item 6 [1,2,3,4]",
+                            "Willingness for effort, Likert item 7 [1,2,3,4]",
+                            "Instructors beliefs about the treatment, item 1 [1,2,3,4,5,6]",
+                            "Instructors beliefs about the treatment, item 2 [1,2,3,4,5,6]"
+                          ))
 
+panderOptions('table.alignment.default', 'left')
+pander(names_labels)
 ```
 
 # Pre-treatment comparison
@@ -291,9 +341,9 @@ Vectors are constant (in the expected direction) that's why we can't compute a B
 # save variables for descriptive statistics later on
 pbl_di_desc <- pbl_di %>%
   dplyr::select(treatment, attendance, 
-         anz.komm.43.1, anz.komm.43.2, anz.komm.43.7, anz.komm.43.3, anz.komm.43.4, anz.komm.43.5,
-         theorie.r.43.1, theorie.r.43.2, theorie.r.43.7, theorie.r.43.3, theorie.r.43.4, theorie.r.43.5, 
-         A43_1, A43_2, A43_7, A43_3, A43_4, A43_5, literature,
+         sel_att_pre1, sel_att_pre2, sel_att_pre3, sel_att_post1, sel_att_post2, sel_att_post3,
+         theory_pre1, theory_pre2, theory_pre3, theory_post1, theory_post2, theory_post3, 
+         inquiry_pre1, inquiry_pre2, inquiry_pre3, inquiry_post1, inquiry_post2, inquiry_post3, literature,
          doz_pass, doz_gef,
          geschl, unterrichtet, erf_vid, lit_pre, prior_knowledge)
 
@@ -325,27 +375,27 @@ M <- 1000
 for every variable
 
 ```{r }
-pbl_di$anz.komm.43.1 <- as.numeric(pbl_di$anz.komm.43.1)
-pbl_di$anz.komm.43.2 <- as.numeric(pbl_di$anz.komm.43.2)
-pbl_di$anz.komm.43.7 <- as.numeric(pbl_di$anz.komm.43.7)
-pbl_di$anz.komm.43.3 <- as.numeric(pbl_di$anz.komm.43.3)
-pbl_di$anz.komm.43.4 <- as.numeric(pbl_di$anz.komm.43.4)
-pbl_di$anz.komm.43.5 <- as.numeric(pbl_di$anz.komm.43.5)
+pbl_di$sel_att_pre1 <- as.numeric(pbl_di$sel_att_pre1)
+pbl_di$sel_att_pre2 <- as.numeric(pbl_di$sel_att_pre2)
+pbl_di$sel_att_pre3 <- as.numeric(pbl_di$sel_att_pre3)
+pbl_di$sel_att_post1 <- as.numeric(pbl_di$sel_att_post1)
+pbl_di$sel_att_post2 <- as.numeric(pbl_di$sel_att_post2)
+pbl_di$sel_att_post3 <- as.numeric(pbl_di$sel_att_post3)
 pbl_di$T2_anstrT_4 <- as.numeric(pbl_di$T2_anstrT_4)
 pbl_di$geschl[pbl_di$geschl == 3] <- NA
 pbl_di <- pbl_di %>%
-  mutate(geschl_b = ifelse(geschl == 2, 1, 0))
+  mutate(geschl = ifelse(geschl == 2, 1, 0))
 
 
 # Define table
 model_tab <- data.frame(variable = c("treatment", "seminar", 
-                                     "attendance", "anz.komm.43.1", "anz.komm.43.2", 
-                                     "anz.komm.43.7", "anz.komm.43.3","anz.komm.43.4", 
-                                     "anz.komm.43.5", "theorie.r.43.1", "theorie.r.43.2", 
-                                     "theorie.r.43.7", "theorie.r.43.3", "theorie.r.43.4", 
-                                     "theorie.r.43.5", "A43_1", "A43_2", 
-                                     "A43_7", "A43_3", "A43_4", 
-                                     "A43_5", "literature", "T2_anstrS_1", 
+                                     "attendance", "sel_att_pre1", "sel_att_pre2", 
+                                     "sel_att_pre3", "sel_att_post1","sel_att_post2", 
+                                     "sel_att_post3", "theory_pre1", "theory_pre2", 
+                                     "theory_pre3", "theory_post1", "theory_post2", 
+                                     "theory_post3", "inquiry_pre1", "inquiry_pre2", 
+                                     "inquiry_pre3", "inquiry_post1", "inquiry_post2", 
+                                     "inquiry_post3", "literature", "T2_anstrS_1", 
                                      "T2_anstrS_2", "T2_anstrS_3", "T2_anstrT_1", 
                                      "T2_anstrT_2","T2_anstrT_3", "T2_anstrT_4", 
                                      "doz_pass", "doz_gef", "geschl"),
@@ -400,7 +450,9 @@ pander(model_tab)
 
 ### Selection of predictors
 
-Check for multicollinearity
+We included the variables on `willingness for effort` for better prediction of missingness.  
+  
+Check for multicollinearity:
 
 ```{r corrgram}
 corrgram(pbl_di, lower.panel = "panel.pie", upper.panel = "panel.cor")
@@ -459,8 +511,10 @@ imp_conv <- mice(pbl_di,
             )
 lattice::stripplot(imp_conv, pch = 20, cex = 1.2)
 ```
+  
+  
 All values seem plausible.
-
+  
 __check convergence__  
 
 of first 10 imputations
@@ -496,54 +550,54 @@ Differentiated by treatment and vignettes of pre and post test.
 ```{r descriptive plot}
 # pivot data for plot
 pbl_di_p <- pbl_di %>%
-  dplyr::mutate(id = 1:length(anz.komm.43.1)) %>%   # create id variable
+  dplyr::mutate(id = 1:length(sel_att_pre1)) %>%   # create id variable
   dplyr::select(id,treatment,
-         anz.komm.43.1, anz.komm.43.2, anz.komm.43.7, anz.komm.43.3, anz.komm.43.4, anz.komm.43.5,
-         theorie.r.43.1, theorie.r.43.2, theorie.r.43.7, theorie.r.43.3, theorie.r.43.4, theorie.r.43.5, 
-         A43_1, A43_2, A43_7, A43_3, A43_4, A43_5) %>%
+         sel_att_pre1, sel_att_pre2, sel_att_pre3, sel_att_post1, sel_att_post2, sel_att_post3,
+         theory_pre1, theory_pre2, theory_pre3, theory_post1, theory_post2, theory_post3, 
+         inquiry_pre1, inquiry_pre2, inquiry_pre3, inquiry_post1, inquiry_post2, inquiry_post3) %>%
   pivot_longer(cols = c(3:20),                                         # pivot longer first
                names_to = "variables",
                values_to = "values") %>%
   dplyr::mutate(vignette = case_when(                                  # separate vignette number from variable name
-                                variables == "anz.komm.43.1" ~ "pre_1", 
-                                variables == "anz.komm.43.2" ~ "pre_2", 
-                                variables == "anz.komm.43.7" ~ "pre_3", 
-                                variables == "anz.komm.43.3" ~ "post_1", 
-                                variables == "anz.komm.43.4" ~ "post_2", 
-                                variables == "anz.komm.43.5" ~ "post_3",
-                                variables == "theorie.r.43.1" ~ "pre_1", 
-                                variables == "theorie.r.43.2" ~ "pre_2", 
-                                variables == "theorie.r.43.7" ~ "pre_3", 
-                                variables == "theorie.r.43.3" ~ "post_1", 
-                                variables == "theorie.r.43.4" ~ "post_2", 
-                                variables == "theorie.r.43.5" ~ "post_3",
-                                variables == "A43_1" ~ "pre_1", 
-                                variables == "A43_2" ~ "pre_2", 
-                                variables == "A43_7" ~ "pre_3", 
-                                variables == "A43_3" ~ "post_1", 
-                                variables == "A43_4" ~ "post_2", 
-                                variables == "A43_5" ~ "post_3"),
+                                variables == "sel_att_pre1" ~ "pre_1", 
+                                variables == "sel_att_pre2" ~ "pre_2", 
+                                variables == "sel_att_pre3" ~ "pre_3", 
+                                variables == "sel_att_post1" ~ "post_1", 
+                                variables == "sel_att_post2" ~ "post_2", 
+                                variables == "sel_att_post3" ~ "post_3",
+                                variables == "theory_pre1" ~ "pre_1", 
+                                variables == "theory_pre2" ~ "pre_2", 
+                                variables == "theory_pre3" ~ "pre_3", 
+                                variables == "theory_post1" ~ "post_1", 
+                                variables == "theory_post2" ~ "post_2", 
+                                variables == "theory_post3" ~ "post_3",
+                                variables == "inquiry_pre1" ~ "pre_1", 
+                                variables == "inquiry_pre2" ~ "pre_2", 
+                                variables == "inquiry_pre3" ~ "pre_3", 
+                                variables == "inquiry_post1" ~ "post_1", 
+                                variables == "inquiry_post2" ~ "post_2", 
+                                variables == "inquiry_post3" ~ "post_3"),
                 vignette = factor(vignette,
                                   levels = c("pre_1", "pre_2", "pre_3", "post_1", "post_2", "post_3")),
                 variables = case_when(                                      # shorten variable names
-                                variables == "anz.komm.43.1" ~ "selection", 
-                                variables == "anz.komm.43.2" ~ "selection", 
-                                variables == "anz.komm.43.7" ~ "selection", 
-                                variables == "anz.komm.43.3" ~ "selection", 
-                                variables == "anz.komm.43.4" ~ "selection", 
-                                variables == "anz.komm.43.5" ~ "selection",
-                                variables == "theorie.r.43.1" ~ "theory", 
-                                variables == "theorie.r.43.2" ~ "theory", 
-                                variables == "theorie.r.43.7" ~ "theory", 
-                                variables == "theorie.r.43.3" ~ "theory", 
-                                variables == "theorie.r.43.4" ~ "theory", 
-                                variables == "theorie.r.43.5" ~ "theory",
-                                variables == "A43_1" ~ "inquiry", 
-                                variables == "A43_2" ~ "inquiry", 
-                                variables == "A43_7" ~ "inquiry", 
-                                variables == "A43_3" ~ "inquiry", 
-                                variables == "A43_4" ~ "inquiry", 
-                                variables == "A43_5" ~ "inquiry")
+                                variables == "sel_att_pre1" ~ "selection", 
+                                variables == "sel_att_pre2" ~ "selection", 
+                                variables == "sel_att_pre3" ~ "selection", 
+                                variables == "sel_att_post1" ~ "selection", 
+                                variables == "sel_att_post2" ~ "selection", 
+                                variables == "sel_att_post3" ~ "selection",
+                                variables == "theory_pre1" ~ "theory", 
+                                variables == "theory_pre2" ~ "theory", 
+                                variables == "theory_pre3" ~ "theory", 
+                                variables == "theory_post1" ~ "theory", 
+                                variables == "theory_post2" ~ "theory", 
+                                variables == "theory_post3" ~ "theory",
+                                variables == "inquiry_pre1" ~ "inquiry", 
+                                variables == "inquiry_pre2" ~ "inquiry", 
+                                variables == "inquiry_pre3" ~ "inquiry", 
+                                variables == "inquiry_post1" ~ "inquiry", 
+                                variables == "inquiry_post2" ~ "inquiry", 
+                                variables == "inquiry_post3" ~ "inquiry")
                 ) %>%
   pivot_wider(id_cols = c("id", "vignette", "treatment"),                                # then pivot back wide
               names_from = "variables", 
@@ -604,16 +658,19 @@ covwithin <- matrix(0,
 # of the 1000 covariance matrices.
 # See Hoijtink, Gu, Mulder, and Rosseel (2019) for an explanation of the latter.
 model <- '
-          select_t1 =~ anz.komm.43.1 + anz.komm.43.2 + anz.komm.43.7
+          select_t1 =~ sel_att_pre1 + sel_att_pre2 + sel_att_pre3
   
-          select_t2 =~ anz.komm.43.3 + anz.komm.43.4 + anz.komm.43.5
+          select_t2 =~ sel_att_post1 + sel_att_post2 + sel_att_post3
   
           instr_beliefs =~ lamda*doz_pass + lamda*doz_gef
           
           select_t2 ~ select_t1 + treatment + instr_beliefs + literature + attendance
          '
 
-fit_mean <- data.frame(cfi_robust = c(),
+fit_mean <- data.frame(chi_sq = c(),
+                       chi_df = c(),
+                       chi_p = c(),
+                       cfi_robust = c(),
                        tli_robust = c(),
                        rmsea_robust = c(),
                        rmsea_cilower_robust = c(),
@@ -634,6 +691,9 @@ for(i in 1:M) {
   covwithin<-covwithin + 1/M * vcov(fit)[10:11,10:11]
   
   # save fit indices
+  fit_mean[i, "chi_sq"] <- fitMeasures(fit)[6]
+  fit_mean[i, "chi_df"] <- fitMeasures(fit)[7]
+  fit_mean[i, "chi_p"] <- fitMeasures(fit)[8]
   fit_mean[i, "cfi_robust"] <- fitMeasures(fit)[27]
   fit_mean[i, "tli_robust"] <- fitMeasures(fit)[28]
   fit_mean[i, "rmsea_robust"] <- fitMeasures(fit)[48]
@@ -673,7 +733,9 @@ covariance<-list(covariance)
 set.seed(100)
 # test hypotheses with bain
 results <- bain(estimates,
-                "instr_beliefs>0 & treatment>0; instr_beliefs>treatment=0; treatment>instr_beliefs=0; instr_beliefs=treatment=0",
+                "instr_beliefs>0 & treatment=0;
+                instr_beliefs<0 & treatment=0;
+                instr_beliefs=0 & treatment=0",
                 n=neff,
                 Sigma=covariance,
                 group_parameters=2,
@@ -703,16 +765,19 @@ covwithin <- matrix(0,
 # of the 1000 covariance matrices.
 # See Hoijtink, Gu, Mulder, and Rosseel (2019) for an explanation of the latter.
 model <- '
-          inquiry_t1 =~ A43_1 + A43_2 + A43_7
+          inquiry_t1 =~ inquiry_pre1 + inquiry_pre2 + inquiry_pre3
   
-          inquiry_t2 =~ A43_3 + A43_4 + A43_5
+          inquiry_t2 =~ inquiry_post1 + inquiry_post2 + inquiry_post3
   
           instr_beliefs =~ lamda*doz_pass + lamda*doz_gef
           
           inquiry_t2 ~ inquiry_t1 + treatment + instr_beliefs + literature + attendance
          '
 
-fit_mean <- data.frame(cfi_robust = c(),
+fit_mean <- data.frame(chi_sq = c(),
+                       chi_df = c(),
+                       chi_p = c(),
+                       cfi_robust = c(),
                        tli_robust = c(),
                        rmsea_robust = c(),
                        rmsea_cilower_robust = c(),
@@ -733,6 +798,9 @@ for(i in 1:M) {
   covwithin<-covwithin + 1/M * vcov(fit)[10:11,10:11]
   
   # save fit indices
+  fit_mean[i, "chi_sq"] <- fitMeasures(fit)[6]
+  fit_mean[i, "chi_df"] <- fitMeasures(fit)[7]
+  fit_mean[i, "chi_p"] <- fitMeasures(fit)[8]
   fit_mean[i, "cfi_robust"] <- fitMeasures(fit)[27]
   fit_mean[i, "tli_robust"] <- fitMeasures(fit)[28]
   fit_mean[i, "rmsea_robust"] <- fitMeasures(fit)[48]
@@ -773,7 +841,10 @@ covariance<-list(covariance)
 set.seed(100)
 # test hypotheses with bain
 results <- bain(estimates,
-                "instr_beliefs>0 & treatment>0; instr_beliefs>treatment=0; treatment>instr_beliefs=0; instr_beliefs=treatment=0",
+                "treatment>0 & instr_beliefs>0;
+                treatment=0 & instr_beliefs>0;
+                treatment>0 & instr_beliefs=0;
+                treatment=0 & instr_beliefs=0;",
                 n=neff,
                 Sigma=covariance,
                 group_parameters=2,
@@ -805,16 +876,19 @@ covwithin <- matrix(0,
 # of the 1000 covariance matrices.
 # See Hoijtink, Gu, Mulder, and Rosseel (2019) for an explanation of the latter.
 model <- '
-          theory_t1 =~ theorie.r.43.1 + theorie.r.43.2 + theorie.r.43.7
+          theory_t1 =~ theory_pre1 + theory_pre2 + theory_pre3
   
-          theory_t2 =~ theorie.r.43.3 + theorie.r.43.4 + theorie.r.43.5
+          theory_t2 =~ theory_post1 + theory_post2 + theory_post3
   
           instr_beliefs =~ lamda*doz_pass + lamda*doz_gef
           
           theory_t2 ~ theory_t1 + treatment + instr_beliefs + literature + attendance
          '
 
-fit_mean <- data.frame(cfi_robust = c(),
+fit_mean <- data.frame(chi_sq = c(),
+                       chi_df = c(),
+                       chi_p = c(),
+                       cfi_robust = c(),
                        tli_robust = c(),
                        rmsea_robust = c(),
                        rmsea_cilower_robust = c(),
@@ -835,6 +909,9 @@ for(i in 1:M) {
   covwithin<-covwithin + 1/M * vcov(fit)[10:11,10:11]
   
   # save fit indices
+  fit_mean[i, "chi_sq"] <- fitMeasures(fit)[6]
+  fit_mean[i, "chi_df"] <- fitMeasures(fit)[7]
+  fit_mean[i, "chi_p"] <- fitMeasures(fit)[8]
   fit_mean[i, "cfi_robust"] <- fitMeasures(fit)[27]
   fit_mean[i, "tli_robust"] <- fitMeasures(fit)[28]
   fit_mean[i, "rmsea_robust"] <- fitMeasures(fit)[48]
@@ -875,7 +952,10 @@ covariance<-list(covariance)
 set.seed(100)
 # test hypotheses with bain
 results <- bain(estimates,
-                "instr_beliefs>0 & treatment>0; instr_beliefs>treatment=0; treatment>instr_beliefs=0; instr_beliefs=treatment=0",
+                "treatment>0 & instr_beliefs>0;
+                treatment=0 & instr_beliefs>0;
+                treatment>0 & instr_beliefs=0;
+                treatment=0 & instr_beliefs=0;",
                 n=neff,
                 Sigma=covariance,
                 group_parameters=2,
