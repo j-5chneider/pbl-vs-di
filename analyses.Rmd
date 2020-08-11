@@ -532,6 +532,16 @@ __Group 0: DI__
 
 
 ```{r descriptive 1}
+# compute scales
+pbl_di_desc <- pbl_di_desc %>%
+  mutate(sel_att_pre = rowMeans(data.frame(sel_att_pre1, sel_att_pre2, sel_att_pre3), na.rm=T),
+         sel_att_post = rowMeans(data.frame(sel_att_post1, sel_att_post2, sel_att_post3), na.rm=T),
+         theory_pre = rowMeans(data.frame(theory_pre1, theory_pre2, theory_pre3), na.rm=T),
+         theory_post = rowMeans(data.frame(theory_post1, theory_post2, theory_post3), na.rm=T),
+         inquiry_pre = rowMeans(data.frame(inquiry_pre1, inquiry_pre2, inquiry_pre3), na.rm=T),
+         inquiry_post = rowMeans(data.frame(inquiry_post1, inquiry_post2, inquiry_post3), na.rm=T)
+         )
+
 descr <- describeBy(pbl_di_desc, group = pbl_di_desc$treatment)
 
 descr$`0`[2:10]
@@ -545,7 +555,7 @@ descr$`1`[2:10]
 
 \
 
-__Descriptice Plot__  
+__Descriptive Plot__  
 Differentiated by treatment and vignettes of pre and post test.
 ```{r descriptive plot}
 # pivot data for plot
@@ -630,6 +640,7 @@ ggplot(pbl_di_p, aes(x = inquiry, y = theory)) +
   ylab("% of analyses containing theory-practice integration")
   
 p$labels$shape <- "treatment"
+# ggsave("Fig2.tiff", width = 90, height = 70, units = "mm", dpi = 500, scale = 1.6)
 
 p
 
