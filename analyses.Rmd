@@ -2,10 +2,10 @@
 title: "Supplement"
 subtitle: "On the journal article ... "
 author:
-  - name: Author # Jürgen Schneider 
-    url: website # https://uni-tuebingen.de/de/28915
-    affiliation: affiliation # Universität Tübingen
-    email: email # juergen.schneider@uni-tuebingen.de
+  - name:  Jürgen Schneider 
+    url: https://uni-tuebingen.de/de/175743
+    affiliation: University of Tübingen
+    email: juergen.schneider@uni-tuebingen.de
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -49,14 +49,16 @@ R.Version()
 ```
 
 # Import data
-```{r echo=FALSE, eval=F}
-# https://doi.org/10.4232/1.13468
-```
-Can't share data on github, but you can get the __open data__ via the repository [Link to data repository shared after blind peer-review]  
-as well as documentation of scales.
+
+* __Data "ZA6259_v1-0-0.sav"__
+    + Get the __open data__ via the repository [https://doi.org/10.4232/1.13468](https://doi.org/10.4232/1.13468)
+    + or by clicking here to `r xfun::embed_file("ZA6259_v1-0-0.sav", text="download the Data")` that are embedded in this HTML file
+* __Data "ts.Rdata"__: Click here to `r xfun::embed_file("data_public/ts.Rdata", text="download the Data")` that are embedded in this HTML file
+* __Analyses__: Github Repo [https://github.com/j-5chneider/pbl-vs-di](https://github.com/j-5chneider/pbl-vs-di)
 
 ```{r }
-pbl_di <- rio::import("data/ZA6259_v1-0-0.sav")
+# this is the data you need to download from Gesis or from within this file
+pbl_di <- rio::import("ZA6259_v1-0-0.sav")
 ```
 
 
@@ -69,7 +71,7 @@ pbl_di$treatment <- ifelse(c(pbl_di$seminartyp == 4 | pbl_di$seminartyp == 2), 0
 
 
 # get variables on theory and selection from other data set (needs to be reintegrated into original data set)
-ts <- rio::import("data/delete.Rdata") %>%
+ts <- rio::import("data_public/ts.Rdata") %>%
   dplyr::select(code, anz.komm.43.1, anz.komm.43.2, anz.komm.43.7, anz.komm.43.3, anz.komm.43.4, anz.komm.43.5, 
                 theorie.r.43.1, theorie.r.43.2, theorie.r.43.7, theorie.r.43.3, theorie.r.43.4, theorie.r.43.5,
                 doz_pass, doz_gef) %>%
@@ -567,7 +569,8 @@ pbl_di_p <- pbl_di %>%
          inquiry_pre1, inquiry_pre2, inquiry_pre3, inquiry_post1, inquiry_post2, inquiry_post3) %>%
   pivot_longer(cols = c(3:20),                                         # pivot longer first
                names_to = "variables",
-               values_to = "values") %>%
+               values_to = "values",
+               values_transform = as.numeric) %>%
   dplyr::mutate(vignette = case_when(                                  # separate vignette number from variable name
                                 variables == "sel_att_pre1" ~ "pre_1", 
                                 variables == "sel_att_pre2" ~ "pre_2", 
