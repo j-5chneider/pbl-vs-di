@@ -52,13 +52,13 @@ R.Version()
 
 * __Data "ZA6259_v1-0-0.sav"__
     + Get the __open data__ via the repository [https://doi.org/10.4232/1.13468](https://doi.org/10.4232/1.13468)
-    + or by clicking here to `r xfun::embed_file("ZA6259_v1-0-0.sav", text="download the Data")` that are embedded in this HTML file
-* __Data "ts.Rdata"__: Click here to `r xfun::embed_file("data_public/ts.Rdata", text="download the Data")` that are embedded in this HTML file
+    + or by clicking here to `r xfun::embed_file(here::here("data_public/ZA6259_v1-0-0.sav"), text="download the Data")` that are embedded in this HTML file
+* __Data "ts.Rdata"__: Click here to `r xfun::embed_file(here::here("data_public/ts.Rdata"), text="download the Data")` that are embedded in this HTML file
 * __Analyses__: Github Repo [https://github.com/j-5chneider/pbl-vs-di](https://github.com/j-5chneider/pbl-vs-di)
 
 ```{r }
 # this is the data you need to download from Gesis or from within this file
-pbl_di <- rio::import("ZA6259_v1-0-0.sav")
+pbl_di <- rio::import("data_public/ZA6259_v1-0-0.sav")
 ```
 
 
@@ -557,9 +557,9 @@ descr$`1`[2:10]
 
 \
 
-__Descriptive Plot__  
+__Descriptive Plot 1__  
 Differentiated by treatment and vignettes of pre and post test.
-```{r descriptive plot}
+```{r descriptive plot 1}
 # pivot data for plot
 pbl_di_p <- pbl_di %>%
   dplyr::mutate(id = 1:length(sel_att_pre1)) %>%   # create id variable
@@ -647,6 +647,52 @@ p$labels$shape <- "treatment"
 
 p
 
+```
+
+
+
+\
+
+__Descriptive Plot 2__  
+Change from pretest to posttest on realizes inquiry steps and theory-practice integration differentiated by treatment.
+```{r descriptive plot 2}
+pbl_di_p2 <- pbl_di %>%
+  mutate(id = 1:nrow(.),
+         theory_pre1 = as.numeric(theory_pre1),
+         theory_pre2 = as.numeric(theory_pre2),
+         theory_pre3 = as.numeric(theory_pre3),
+         theory_post1 = as.numeric(theory_post1),
+         theory_post2 = as.numeric(theory_post2),
+         theory_post3 = as.numeric(theory_post3),
+         theory_pre = rowMeans(data.frame(theory_pre1, theory_pre2, theory_pre3)),
+         theory_pos = rowMeans(data.frame(theory_post1, theory_post2, theory_post3)),
+         inquir_pre = rowMeans(data.frame(inquiry_pre1, inquiry_pre2, inquiry_pre3)),
+         inquir_pos = rowMeans(data.frame(inquiry_post1, inquiry_post2, inquiry_post3)),
+         theory = theory_pos - theory_pre,
+         inquiry = inquir_pos - inquir_pre) %>%
+  dplyr::select(id, treatment, theory, inquiry)
+
+
+pbl_di_p2$treatment <- factor(pbl_di_p2$treatment, 
+                              levels = c(0,1), 
+                              labels = c("DI", "PB"))
+
+
+ggplot(pbl_di_p2, aes(x = inquiry, y = theory)) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon")  +
+  scale_fill_continuous(type = "viridis") +
+  scale_y_continuous(limits = c(-1.1,1.1), labels = c("-100%", "-50%", "0%", "+50%", "+100%"), 
+                     minor_breaks = NULL, expand = c(0, 0)) +
+  scale_x_continuous(limits = c(-3.1,3.1), breaks = c(-3,-2,-1,0,1,2,3), 
+                     labels = c("-3", "-2", "-1", "0", "+1", "+2", "+3"), 
+                     minor_breaks = NULL, expand = c(0, 0)) +
+  xlab("change in realized inquiry steps in analyses") +
+  ylab("change in % of analyses \ncontaining theory-practice integration") +
+  labs(fill = "density") +
+  geom_hline(yintercept=0, color = "white", alpha = .2) +
+  geom_vline(xintercept=0, color = "white", alpha = .2) +
+  theme_bw() +
+  facet_wrap(~treatment)
 ```
 
 
