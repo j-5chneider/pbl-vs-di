@@ -40,6 +40,7 @@ library(MASS)
 library(BayesFactor)
 library(ggthemes)
 library(psych)
+library(ggside)
 ```
 
 __R-Version__
@@ -693,6 +694,44 @@ ggplot(pbl_di_p2, aes(x = inquiry, y = theory)) +
   geom_vline(xintercept=0, color = "white", alpha = .2) +
   theme_bw() +
   facet_wrap(~treatment)
+```
+
+
+\
+
+__Descriptive Plot 3__  
+Change from pretest to posttest in theory-practice integrations plotted with the instructor's positive attitude.
+```{r descriptive plot 3}
+pbl_di_p3 <- pbl_di %>%
+  mutate(doz = rowMeans(data.frame(doz_pass, doz_gef), na.rm = T),
+         theory_pre = rowMeans(data.frame(theory_pre1, theory_pre2, theory_pre3), na.rm = T),
+         theory_post = rowMeans(data.frame(theory_post1, theory_post2, theory_post3), na.rm = T),
+         theory_change = theory_post - theory_pre) %>%
+  dplyr::select(doz, treatment, theory_pre, theory_post, theory_change) %>%
+  pivot_longer(cols=3:5, names_to = "time", values_to = "theory")
+
+
+ggplot(pbl_di_p3%>%dplyr::filter(time=="theory_change"), aes(x=doz, y=theory)) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon")  +
+  geom_smooth(method='lm', color = "red") +
+  scale_fill_continuous(type = "viridis") +
+  scale_y_continuous(limits = c(-.5,1.2), 
+                     expand = c(0,0), 
+                     breaks = c(-.4, -.2, 0,.2,.4,.6,.8,1),
+                     labels = c("-40%", "-20%", "0%", "+20%", "+40%", "+60%", "+80%", "+100%")
+                     ) +
+  scale_x_continuous(limits = c(0.5,7), 
+                     expand = c(0,0), 
+                     breaks = c(1:6)) +
+  geom_xsidedensity(aes(y=stat(density)), fill = "#37678c", color = NA) +
+  geom_ysidedensity(aes(x=stat(density)), fill = "#37678c", color = NA, scale = "free_y") +
+  scale_ysidex_continuous() +
+  scale_xsidey_continuous() +
+  xlab("instructor's positive attitude") +
+  ylab("change in % of analyses \ncontaining theory-practice integration") +
+  labs(fill = "density") +
+  theme_bw()
+
 ```
 
 

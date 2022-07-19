@@ -173,6 +173,10 @@ library(tidyverse)
 #   theme_bw()
   
 
+############################################################# #
+####  FIG 3                                                ####
+####  REVISION 1                                           ## #
+############################################################# #
 
 ########### CHANGE ##########################################
 
@@ -226,4 +230,190 @@ ggplot(pbl_di_p2, aes(x = inquiry, y = theory)) +
 
 
 
-ggsave("Fig2.tiff", width = 20, height = 15, dpi = 300, units = "cm", scale = .8)
+ggsave("Fig3.tiff", width = 20, height = 15, dpi = 300, units = "cm", scale = .8)
+
+
+############################################################# #
+####  FIG 3                                                ####
+####  REVISION 2                                           ## #
+############################################################# #
+
+pbl_di <- rio::import("data_public/ZA6259_v1-0-0.sav")
+
+
+# construct treatment variable
+# 0 = DI, 1 = PBL
+pbl_di$treatment <- ifelse(c(pbl_di$seminartyp == 4 | pbl_di$seminartyp == 2), 0, 1)
+
+
+# get variables on theory and selection from other data set (needs to be reintegrated into original data set)
+ts <- rio::import("data_public/ts.Rdata") %>%
+  dplyr::select(code, anz.komm.43.1, anz.komm.43.2, anz.komm.43.7, anz.komm.43.3, anz.komm.43.4, anz.komm.43.5, 
+                theorie.r.43.1, theorie.r.43.2, theorie.r.43.7, theorie.r.43.3, theorie.r.43.4, theorie.r.43.5,
+                doz_pass, doz_gef) %>%
+  dplyr::mutate(code = str_trim(code))
+
+pbl_di <- left_join(pbl_di, ts, by ="code")
+
+
+# construct centered variable for attendance
+pbl_di <- pbl_di %>%
+  dplyr::mutate(attendance = rowSums(data.frame(anwesend_erst, anwesend_zweit)))
+
+# anwesend_MEAN <- pbl_di %>%
+#                     summarize(anwesend_M = mean(anwesend, na.rm=TRUE))
+
+# construct variable literature
+pbl_di <- pbl_di %>%
+  dplyr::mutate(literature = rowSums(data.frame(T2_text_1, T2_text_2, T2_text_3)))
+
+# construct the variable lit_pre (literature read before the treatment)
+pbl_di <- pbl_di %>%
+  dplyr::mutate(lit_pre = rowSums(data.frame(T1_text_1, T1_text_2, T1_text_3)))
+
+# construct the variable prior_knowledge, 
+# based on a test on declarative knowledge on classroom management
+pbl_di <- pbl_di %>%
+  mutate(prior_knowledge = rowMeans(data.frame(T1_wiss_crm_verh1, T1_wiss_crm_verh2, T1_wiss_crm_verh3, T1_wiss_crm_verh4, T1_wiss_crm_verh5, T1_wiss_crm_verh6, T1_wiss_crm_bez1, T1_wiss_crm_bez2, T1_wiss_crm_unt1, T1_wiss_crm_unt2, T1_wiss_crm_unt3, T1_wiss_crm_unt4, T1_wiss_crm_unt5, T1_wiss_crm_unt6), na.rm = T))
+
+
+pbl_di <- pbl_di %>%
+  mutate(sel_att_pre1 = case_when(
+    is.na(theorie.r.43.1) & is.na(theorie.r.43.2) & is.na(theorie.r.43.7) &
+      is.na(A43_1) & is.na(A43_2) & is.na(A43_7) ~ as.numeric(NA),
+    TRUE ~ as.numeric(anz.komm.43.1)),
+    sel_att_pre2 = case_when(
+      is.na(theorie.r.43.1) & is.na(theorie.r.43.2) & is.na(theorie.r.43.7) &
+        is.na(A43_1) & is.na(A43_2) & is.na(A43_7) ~ as.numeric(NA),
+      TRUE ~ as.numeric(anz.komm.43.2)),
+    sel_att_pre3 = case_when(
+      is.na(theorie.r.43.1) & is.na(theorie.r.43.2) & is.na(theorie.r.43.7) &
+        is.na(A43_1) & is.na(A43_2) & is.na(A43_7) ~ as.numeric(NA),
+      TRUE ~ as.numeric(anz.komm.43.7)),
+    sel_att_post1 = case_when(
+      is.na(theorie.r.43.3) & is.na(theorie.r.43.4) & is.na(theorie.r.43.5) &
+        is.na(A43_3) & is.na(A43_4) & is.na(A43_5) ~ as.numeric(NA),
+      TRUE ~ as.numeric(anz.komm.43.3)),
+    sel_att_post2 = case_when(
+      is.na(theorie.r.43.3) & is.na(theorie.r.43.4) & is.na(theorie.r.43.5) &
+        is.na(A43_3) & is.na(A43_4) & is.na(A43_5) ~ as.numeric(NA),
+      TRUE ~ as.numeric(anz.komm.43.4)),
+    sel_att_post3 = case_when(
+      is.na(theorie.r.43.3) & is.na(theorie.r.43.4) & is.na(theorie.r.43.5) &
+        is.na(A43_3) & is.na(A43_4) & is.na(A43_5) ~ as.numeric(NA),
+      TRUE ~ as.numeric(anz.komm.43.5))
+  )
+
+
+# deleting some variables to avoid problems with imputation
+pbl_di <- pbl_di %>%
+  mutate(theory_pre1 = theorie.r.43.1,
+         theory_pre2 = theorie.r.43.2,
+         theory_pre3 = theorie.r.43.7,
+         theory_post1 = theorie.r.43.3,
+         theory_post2 = theorie.r.43.4,
+         theory_post3 = theorie.r.43.5,
+         inquiry_pre1 = A43_1, 
+         inquiry_pre2 = A43_2, 
+         inquiry_pre3 = A43_7, 
+         inquiry_post1 = A43_3, 
+         inquiry_post2 = A43_4, 
+         inquiry_post3 = A43_5) %>% # rename some variables for easier understanding
+  dplyr::select(treatment, seminar, attendance, 
+                sel_att_pre1, sel_att_pre2, sel_att_pre3, sel_att_post1, sel_att_post2, sel_att_post3,
+                theory_pre1, theory_pre2, theory_pre3, theory_post1, theory_post2, theory_post3, 
+                inquiry_pre1, inquiry_pre2, inquiry_pre3, inquiry_post1, inquiry_post2, inquiry_post3, literature,
+                T2_anstrS_1, T2_anstrS_2, T2_anstrS_3, T2_anstrT_1, T2_anstrT_2, T2_anstrT_3, T2_anstrT_4,
+                doz_pass, doz_gef,
+                geschl, unterrichtet, erf_vid, lit_pre, prior_knowledge) %>%
+  dplyr::filter(!is.na(seminar))
+
+
+
+
+
+
+
+
+pbl_di_p <- pbl_di %>%
+  mutate(doz = rowMeans(data.frame(doz_pass, doz_gef), na.rm = T),
+         theory_pre = rowMeans(data.frame(theory_pre1, theory_pre2, theory_pre3), na.rm = T),
+         theory_post = rowMeans(data.frame(theory_post1, theory_post2, theory_post3), na.rm = T),
+         theory_change = theory_post - theory_pre) %>%
+  select(doz, treatment, theory_pre, theory_post, theory_change) %>%
+  pivot_longer(cols=3:5, names_to = "time", values_to = "theory")
+
+# ggplot(pbl_di_p, aes(x=doz, y=theory, color = time)) +
+#   stat_summary(fun.data= mean_cl_normal) + 
+#   geom_smooth(method='lm') +
+#   # geom_point() +
+#   scale_color_viridis_d() +
+#   scale_y_continuous(limits = c(-.05,.3)) +
+#   theme_minimal()
+
+
+library(ggside)
+
+# ggplot(pbl_di_p, aes(x=doz, y=theory, color = time)) +
+#   geom_xsidedensity(aes(y=stat(density))) +
+#   geom_ysidedensity(aes(x=stat(density))) +
+#   stat_summary(fun.data= mean_cl_normal) + 
+#   geom_smooth(method='lm') +
+#   # scale_color_viridis_d() +
+#   scale_y_continuous(limits = c(0,1)) +
+#   theme_bw()
+
+
+
+## nur POSTTEST
+ggplot(pbl_di_p%>%dplyr::filter(time=="theory_post"), aes(x=doz, y=theory)) +
+  # stat_summary(fun.data= mean_cl_normal) + 
+  # geom_point(position = position_dodge2(width = .2), alpha = .5) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon")  +
+  geom_smooth(method='lm', color = "red") +
+  # scale_color_viridis_d() +
+  scale_fill_continuous(type = "viridis") +
+  scale_y_continuous(limits = c(-.2,1.2), 
+                     expand = c(0,0), 
+                     breaks = c(0,.2,.4,.6,.8,1), 
+                     labels = c("0", ".2", ".4", ".6", ".8", "1")) +
+  scale_x_continuous(limits = c(0.5,7.5), 
+                     expand = c(0,0), 
+                     breaks = c(1:6)) +
+  geom_xsidedensity(aes(y=stat(density)), fill = "#37678c", color = NA) +
+  geom_ysidedensity(aes(x=stat(density)), fill = "#37678c", color = NA, scale = "free_y") +
+  scale_ysidex_continuous() +
+  scale_xsidey_continuous() +
+  xlab("instructor's positive attitude") +
+  ylab("ratio of analyses containing\ntheory-practice integration (per person)") +
+  labs(fill = "density") +
+  theme_bw()
+
+
+## CHANGE
+ggplot(pbl_di_p%>%dplyr::filter(time=="theory_change"), aes(x=doz, y=theory)) +
+  # stat_summary(fun.data= mean_cl_normal) + 
+  # geom_point(position = position_dodge2(width = .2), alpha = .5) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon")  +
+  geom_smooth(method='lm', color = "red") +
+  # scale_color_viridis_d() +
+  scale_fill_continuous(type = "viridis") +
+  scale_y_continuous(limits = c(-.5,1.2), 
+                     expand = c(0,0), 
+                     breaks = c(-.4, -.2, 0,.2,.4,.6,.8,1),
+                     labels = c("-40%", "-20%", "0%", "+20%", "+40%", "+60%", "+80%", "+100%")
+                     ) +
+  scale_x_continuous(limits = c(0.5,7), 
+                     expand = c(0,0), 
+                     breaks = c(1:6)) +
+  geom_xsidedensity(aes(y=stat(density)), fill = "#37678c", color = NA) +
+  geom_ysidedensity(aes(x=stat(density)), fill = "#37678c", color = NA, scale = "free_y") +
+  # coord_cartesian(xlim=c(1, 6)) +
+  scale_ysidex_continuous() +
+  scale_xsidey_continuous() +
+  xlab("instructor's positive attitude") +
+  ylab("change in % of analyses \ncontaining theory-practice integration") +
+  labs(fill = "density") +
+  theme_bw()
+
+ggsave("Fig3.tiff", width = 20, height = 15, dpi = 300, units = "cm", scale = .8)
